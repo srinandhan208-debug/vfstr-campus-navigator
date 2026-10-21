@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Navigator — VFSTR</title>
+<style>
+:root{--navy:#173b67;--blue:#2369a8;--bg:#f3f7fb;--ink:#203044;--muted:#63748a;--line:#dce6f0}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#173b67,#287fc0);color:#fff;padding:26px 18px 30px;text-align:center}header h1{margin:0 0 8px;font-size:clamp(24px,5vw,34px)}header p{margin:0;opacity:.92}
+main{max-width:920px;margin:22px auto;padding:0 14px 32px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #173b670c}
+.searchrow{display:flex;gap:8px}input{min-width:0;flex:1;padding:13px;border:1px solid #c8d6e5;border-radius:10px;font-size:16px}button,.maplink{border:0;border-radius:10px;background:var(--blue);color:white;padding:12px 14px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}button.secondary{background:#eaf2fa;color:var(--navy)}button[aria-pressed="true"]{outline:2px solid #8bb9e8;outline-offset:1px}.hint{font-size:13px;color:var(--muted);margin:10px 2px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.place{border:1px solid var(--line);border-radius:13px;padding:15px;background:#fff;display:flex;flex-direction:column;gap:10px}.place h3{margin:0;font-size:17px}.place p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}.place .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}.place .actions a{flex:1}.pill{font-size:11px;color:#176044;background:#e5f6ed;border-radius:99px;padding:5px 8px;width:max-content}.mapbox{overflow:hidden;border-radius:12px;border:1px solid var(--line)}iframe{display:block;width:100%;height:300px;border:0}.status{font-size:14px;color:var(--muted);margin-top:10px}footer{text-align:center;color:var(--muted);font-size:12px;padding:0 12px 24px}
+@media(max-width:480px){.searchrow{flex-wrap:wrap}.searchrow input{flex-basis:100%}.searchrow button{flex:1}.panel{padding:14px}}
+</style></head>
+<body>
+<header><h1>🧭 Campus Navigator</h1><p>Vignan’s Foundation for Science, Technology & Research · Vadlamudi</p></header>
+<main>
+<section class="panel"><h2 style="margin:0 0 12px">Find a campus place</h2><div class="searchrow"><input id="search" type="search" placeholder="Search a block, place, or department…" aria-label="Search campus places or departments"><button id="voice" class="secondary" type="button">🎙️ Voice</button><button id="clear" type="button">Search</button></div><p class="hint">Search blocks, campus facilities, hostels, or academic departments. Department building details are shown only where confirmed; other entries open a Google Maps search to verify.</p><p id="status" class="status" aria-live="polite"></p></section>
+<section class="panel"><h2 style="margin:0 0 12px">Campus places</h2><div id="places" class="grid"></div></section>
+<section class="panel"><h2 style="margin:0 0 12px">Departments & schools</h2><p class="hint" style="margin:0 0 12px">Search any department below. Where the official university page confirms a building, it is labelled. Other departments open a map search because their exact block was not verified.</p><div id="departments" class="grid"></div></section>
+<section class="panel"><h2 style="margin:0 0 12px">Campus map</h2><div class="searchrow" style="margin-bottom:12px"><button id="streetMap" class="secondary" type="button" aria-pressed="false">🗺️ Street map</button><button id="satelliteMap" type="button" aria-pressed="true">🛰️ Satellite view</button></div><div class="mapbox"><iframe id="campusMap" title="VFSTR campus satellite map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=16.232237,80.5486618&t=k&z=16&output=embed"></iframe></div><p class="hint" id="mapHint">Satellite imagery shows aerial views; individual department/building pins may need checking.</p><p style="margin-top:12px"><a class="maplink" href="https://maps.app.goo.gl/xfr2g2PyWC9ZwoL67" target="_blank" rel="noopener noreferrer">🗺️ Open full campus map in Google Maps</a></p></section>
+</main><footer>Campus Navigator prototype · Includes campus places, student facilities, hostels, department directory, verified building notes where available, and Google Maps search links.</footer>
+<script>
+const places=[
+{name:'H Block',desc:'Individual Google Maps pin added from your shared link.',url:'https://www.google.com/maps/search/?api=1&query=16.232237,80.5486618',verified:true},
+{name:'A Block',desc:'Open the campus map search for this location.',query:'A Block VFSTR Vignan University Vadlamudi'},
+{name:'N Block',desc:'Open the campus map search for this location.',query:'N Block VFSTR Vignan University Vadlamudi'},
+{name:'U Block',desc:'Open the campus map search for this location.',query:'U Block VFSTR Vignan University Vadlamudi'},
+{name:'Pharmacy Block',desc:'Open the campus map search for this location.',query:'Pharmacy Block VFSTR Vignan University Vadlamudi'},
+{name:'Library',desc:'Find the campus library.',query:'Library VFSTR Vignan University Vadlamudi'},
+{name:'Canteen',desc:'Find the campus canteen.',query:'Canteen VFSTR Vignan University Vadlamudi'},
+{name:'ECE Labs',desc:'Find ECE laboratories.',query:'ECE Labs VFSTR Vignan University Vadlamudi'},
+{name:'Administrative Office',desc:'Find the administrative office.',query:'Administrative Office VFSTR Vignan University Vadlamudi'},
+{name:'Main Gate',desc:'Find the main campus entrance.',query:'Main Gate VFSTR Vignan University Vadlamudi'},
+{name:'Girls’ Hostel — Priyadarshini',desc:'Hostel location listed in VFSTR campus-facilities document.',coords:'16.23323,80.554585',url:'https://www.google.com/maps/search/?api=1&query=16.23323,80.554585',verified:true},
+{name:'Boys’ Hostel — Vijaya Vihar',desc:'Hostel location listed in VFSTR campus-facilities document.',coords:'16.231809,80.550283',url:'https://www.google.com/maps/search/?api=1&query=16.231809,80.550283',verified:true},
+{name:'Campus Health Centre',desc:'Campus medical facility. Exact building pin not verified; open map search.',query:'Health Centre VFSTR Vignan University Vadlamudi'},
+{name:'Main Canteen / Cafeteria',desc:'Campus cafeteria and food facility. Exact pin not verified; open map search.',query:'Main Canteen Cafeteria VFSTR Vignan University Vadlamudi'},
+{name:'Bank & ATM',desc:'Find bank or ATM facilities on campus; exact pin not verified.',query:'Bank ATM VFSTR Vignan University Vadlamudi'},
+{name:'Sports Ground',desc:'Find campus sports grounds; exact pin not verified.',query:'Sports Ground VFSTR Vignan University Vadlamudi'},
+{name:'Gymnasium',desc:'Find the campus gymnasium; exact pin not verified.',query:'Gymnasium Gym VFSTR Vignan University Vadlamudi'},
+{name:'University Guest House',desc:'Guest house facility listed by the university; exact pin not verified.',query:'Guest House VFSTR Vignan University Vadlamudi'},
+{name:'International Hostel',desc:'University mentions a separate international hostel facility; exact pin not verified.',query:'International Hostel VFSTR Vignan University Vadlamudi'},
+{name:'Bus / Transport Point',desc:'Find campus transport or bus pickup point; exact pin not verified.',query:'Bus Transport Point VFSTR Vignan University Vadlamudi'},
+{name:'Student Parking',desc:'Find campus parking areas; exact pin not verified.',query:'Student Parking VFSTR Vignan University Vadlamudi'},
+{name:'Campus Shopping Facility',desc:'Find shops or kiosks on campus; exact pin not verified.',query:'Shopping Facility Shops VFSTR Vignan University Vadlamudi'},
+{name:'Nagarjuna Bhavan / Vignan TBI',desc:'Campus innovation and incubation facility; exact pin not verified.',query:'Nagarjuna Bhavan Vignan TBI VFSTR Vadlamudi'},
+{name:'Vignan Pond',desc:'Pond near the VFSTR campus area. Map pin based on mapped pond coordinates.',coords:'16.23424,80.55327',url:'https://www.google.com/maps/search/?api=1&query=16.23424%2C80.55327',verified:true},
+{name:'Vignan Convocation Hall',desc:'Open Google Maps to locate the campus convocation hall; verify the pin before travelling.',query:'Vignan Convocation Hall VFSTR Vadlamudi Guntur'},
+{name:'Open Ground / University Playground',desc:'University playground listed on Maps. Open the map to see its exact entrance.',query:'Vignan University Playground VFSTR Vadlamudi 6HJ2+WRV'},
+{name:'Transport Office — A Block (not RTC Bus Stop)',desc:'Exact Google Maps pin shared by you for the VFSTR campus Transport Office in A Block.',url:'https://maps.app.goo.gl/b4zE2EUaQzTAQ67n9',verified:true},
+{name:'Vignan’s Lara Institute of Technology & Science',desc:'Nearby Vignan’s Lara campus on the Guntur–Tenali Road; separate institution from VFSTR.',query:'Vignans Lara Institute of Technology and Science Vadlamudi Guntur'}
+];
+const departments=[
+{name:'Computer Science and Engineering (CSE)',school:'School of Computing & Informatics'},
+{name:'Advanced Computer Science and Engineering (ACSE)',school:'School of Computing & Informatics'},
+{name:'Information Technology (IT)',school:'School of Computing & Informatics',block:'U Block, 3rd floor',verified:true},
+{name:'Computer Applications (BCA/MCA)',school:'School of Computing & Informatics'},
+{name:'Electronics and Communication Engineering (ECE)',school:'School of Electrical, Electronics & Communication Engineering'},
+{name:'Electrical and Electronics Engineering (EEE)',school:'School of Electrical, Electronics & Communication Engineering'},
+{name:'Biomedical Engineering',school:'School of Electrical, Electronics & Communication Engineering'},
+{name:'Mechanical Engineering',school:'School of Core Engineering'},
+{name:'Civil Engineering',school:'School of Core Engineering'},
+{name:'Chemical Engineering',school:'School of Core Engineering'},
+{name:'Textile Technology',school:'School of Core Engineering',block:'H Block, ground and first floors',verified:true},
+{name:'Biotechnology',school:'School of Biotechnology & Pharmaceutical Sciences',block:'U Block, 2nd floor',verified:true},
+{name:'Pharmaceutical Sciences',school:'School of Biotechnology & Pharmaceutical Sciences'},
+{name:'Bioinformatics',school:'School of Biotechnology & Pharmaceutical Sciences',block:'U Block, 2nd floor (official page groups this with Biotechnology)',verified:true},
+{name:'Management Studies (BBA/MBA)',school:'School of Law & Management',block:'U Block, 3rd floor',verified:true},
+{name:'Institute of Law',school:'School of Law & Management'},
+{name:'Agricultural Engineering',school:'School of Agriculture, Food Science & Technology'},
+{name:'Food Technology',school:'School of Agriculture, Food Science & Technology',block:'H Block',verified:true},
+{name:'Chemistry',school:'School of Applied Sciences & Humanities'},
+{name:'Physics',school:'School of Applied Sciences & Humanities'},
+{name:'Mathematics and Statistics',school:'School of Applied Sciences & Humanities'},
+{name:'English / Languages',school:'School of Applied Sciences & Humanities'},
+{name:'Polytechnic / Diploma Engineering',school:'Directorate of Polytechnic Education'}
+];
+const departmentsEl=document.getElementById('departments');
+const placesEl=document.getElementById('places'),searchEl=document.getElementById('search'),statusEl=document.getElementById('status');
+function mapsUrl(p){return p.url||('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.query));}
+function render(){const q=searchEl.value.trim().toLowerCase();const filtered=places.filter(p=>p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q));placesEl.innerHTML='';filtered.forEach(p=>{const card=document.createElement('article');card.className='place';const title=document.createElement('h3');title.textContent=p.name;card.appendChild(title);if(p.verified){const pill=document.createElement('span');pill.className='pill';pill.textContent='Exact pin added';card.appendChild(pill)}const desc=document.createElement('p');desc.textContent=p.desc;card.appendChild(desc);const actions=document.createElement('div');actions.className='actions';const open=document.createElement('a');open.className='maplink';open.href=mapsUrl(p);open.target='_blank';open.rel='noopener noreferrer';open.textContent='📍 Open location';actions.appendChild(open);const directions=document.createElement('a');directions.className='maplink';directions.style.background='#eaf2fa';directions.style.color='#173b67';directions.href=p.name.startsWith('Transport Office')?mapsUrl(p):'https://www.google.com/maps/dir/?api=1&destination='+(p.coords|| (p.verified?'16.232237,80.5486618':encodeURIComponent(p.query)));directions.target='_blank';directions.rel='noopener noreferrer';directions.textContent='➡️ Directions';actions.appendChild(directions);card.appendChild(actions);placesEl.appendChild(card)});
+const deptFiltered=departments.filter(d=>(d.name+' '+d.school+' '+(d.block||'')).toLowerCase().includes(q));departmentsEl.innerHTML='';deptFiltered.forEach(d=>{const card=document.createElement('article');card.className='place';const title=document.createElement('h3');title.textContent=d.name;card.appendChild(title);const school=document.createElement('p');school.textContent=d.school;card.appendChild(school);const loc=document.createElement('p');loc.textContent=d.block?'Building: '+d.block:'Building: not verified yet — use map search to check';card.appendChild(loc);if(d.verified){const pill=document.createElement('span');pill.className='pill';pill.textContent='Building listed on official university page';card.appendChild(pill)}const actions=document.createElement('div');actions.className='actions';const link=document.createElement('a');link.className='maplink';link.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(d.name+' '+(d.block||'')+' VFSTR Vignan University Vadlamudi');link.target='_blank';link.rel='noopener noreferrer';link.textContent='📍 Search on Google Maps';actions.appendChild(link);card.appendChild(actions);departmentsEl.appendChild(card)});statusEl.textContent=(filtered.length+deptFiltered.length)?`${filtered.length} campus place${filtered.length===1?'':'s'} and ${deptFiltered.length} department${deptFiltered.length===1?'':'s'} found.`:'No places or departments matched. Try another name.';}
+document.getElementById('streetMap').addEventListener('click',()=>{const m=document.getElementById('campusMap');m.src='https://maps.google.com/maps?q=16.232237,80.5486618&t=m&z=16&output=embed';m.title='VFSTR campus street map';document.getElementById('streetMap').setAttribute('aria-pressed','true');document.getElementById('satelliteMap').setAttribute('aria-pressed','false');document.getElementById('streetMap').classList.remove('secondary');document.getElementById('satelliteMap').classList.add('secondary');document.getElementById('mapHint').textContent='Street map view. Use Open full campus map for Google Maps search and navigation.'});document.getElementById('satelliteMap').addEventListener('click',()=>{const m=document.getElementById('campusMap');m.src='https://maps.google.com/maps?q=16.232237,80.5486618&t=k&z=16&output=embed';m.title='VFSTR campus satellite map';document.getElementById('satelliteMap').setAttribute('aria-pressed','true');document.getElementById('streetMap').setAttribute('aria-pressed','false');document.getElementById('satelliteMap').classList.remove('secondary');document.getElementById('streetMap').classList.add('secondary');document.getElementById('mapHint').textContent='Satellite imagery shows aerial views; individual department/building pins may need checking.'});document.getElementById('clear').addEventListener('click',render);searchEl.addEventListener('input',render);document.getElementById('voice').addEventListener('click',()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){statusEl.textContent='Voice search is not supported in this browser. Please type the place name.';return}const rec=new SR();rec.lang='en-IN';rec.onresult=e=>{searchEl.value=e.results[0][0].transcript;render()};rec.onerror=()=>statusEl.textContent='Voice search could not start. Please type the place name.';rec.start()});render();
+</script></body></html>
